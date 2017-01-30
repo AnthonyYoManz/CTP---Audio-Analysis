@@ -76,12 +76,8 @@ void computeFFT(real * _samples, real * _output, unsigned int _sampleCount)
 		if (j > i)
 		{
 			std::swap(_output[j], _output[i]); //swaps the real numbers
-			std::swap(_output[j + 1], _output[i + 1]); //swaps the imag numbers (maybe not necessary)
-			if ((j / 2)<(valueCount / 4)) {	//
-											//swap the real part
+			if ((j / 2)<(valueCount / 4)) {
 				std::swap(_output[(valueCount - (i + 2))], _output[(valueCount - (j + 2))]);
-				//swap the complex part
-				std::swap(_output[(valueCount - (i + 2)) + 1], _output[(valueCount - (j + 2)) + 1]);
 			}
 		}
 		//this next bit is the great part that makes j jump around to the correct places
@@ -132,33 +128,14 @@ void computeFFT(real * _samples, real * _output, unsigned int _sampleCount)
 	}
 }
 
-void splitSamplesIntoChannels(real * _samples, unsigned int _totalSampleCount, real *& _outLeft, real *& _outRight)
-{
-	_outLeft = new real[_totalSampleCount / 2];
-	_outRight = new real[_totalSampleCount / 2];
-	for (int i = 0; i < _totalSampleCount / 2; i++)
-	{
-		_outLeft[i] = _samples[i * 2];		//normalise  left channel
-		_outRight[i] = _samples[(i * 2) + 1];	//normalise right channel
-	}
-}
-
-FFTResult compute2ChannelRealTo1ChannelComplexFFT(real * _samples, unsigned int _sampleCount, unsigned int _sampleCountPerInstant)
+FFTResult computeRealToComplexFFT(real * _samples, unsigned int _sampleCount, unsigned int _sampleCountPerInstant)
 {
 	FFTResult output;
-
-	real* lSamples;
-	real* rSamples;
-	splitSamplesIntoChannels(_samples, _sampleCount, lSamples, rSamples);
-	unsigned int binCount = _sampleCountPerInstant / 2;
-	_sampleCount /= 2;
-	int currentInstant = 0;
 	unsigned int instantCount = _sampleCount / _sampleCountPerInstant;
 	if (instantCount != (float)_sampleCount / _sampleCountPerInstant)
 	{
 		instantCount++;
 	}
-
 	
 	output.m_sampleCount = _sampleCountPerInstant * instantCount;
 	output.m_binCountPerInstant = _sampleCountPerInstant /2;
@@ -175,8 +152,7 @@ FFTResult compute2ChannelRealTo1ChannelComplexFFT(real * _samples, unsigned int 
 			if (i + iInstant * _sampleCountPerInstant < _sampleCount)
 			{
 				//merge l and r channels into 1 by averaging
-				instant[i] = lSamples[i + iInstant * _sampleCountPerInstant] + rSamples[i + iInstant * _sampleCountPerInstant];
-				instant[i] /= 2.0;
+				instant[i] = _samples[i + iInstant * _sampleCountPerInstant];
 			}
 			else
 			{
@@ -186,9 +162,9 @@ FFTResult compute2ChannelRealTo1ChannelComplexFFT(real * _samples, unsigned int 
 		}
 		//apply windowing function then do the FFT
 		applyHannWindow(instant, windowedInstant, _sampleCountPerInstant);
-		//applyHammingWindow(instant, windowedInstant, _sampleCountPerInstant);
+		//applyHammingWindow(instant, windowedInstant, _sampleCountPerInstant); //for hamming window example
 		computeFFT(windowedInstant, output.m_samples.back(), _sampleCountPerInstant);
-		//computeFFT(instant, output.m_samples.back(), _sampleCountPerInstant);
+		//computeFFT(instant, output.m_samples.back(), _sampleCountPerInstant); //without windowing
 
 		//get the info we actually want from the FFT
 		real maxMag = 0;
@@ -199,10 +175,11 @@ FFTResult compute2ChannelRealTo1ChannelComplexFFT(real * _samples, unsigned int 
 			//because:  nlog10(x^y) == nylog10(x); in this case y = 1/2
 			real realComp = output.m_samples.back()[i * 2];
 			real imagComp = output.m_samples.back()[i * 2 + 1];
-			real fftMag = realComp * realComp + imagComp * imagComp;
-			fftMag = sqrt(fftMag);
-			/*fftMag = 10 * log10((output.m_samples.back()[i * 2] * output.m_samples.back()[i * 2] + 
-								output.m_samples.back()[i * 2 + 1] * output.m_samples.back()[i * 2 + 1])); //convert to decibels*/
+			real fftMag = sqrt(realComp * realComp + imagComp * imagComp);
+			//fftMag /= (_sampleCountPerInstant / 2);
+			//fftMag = 10 * log10(fftMag); //convert to decibels*/
+			//fftMag = fabs(fftMag);
+			//fftMag += 96;
 			if (fftMag > maxMag && i != 0)	//ignore 0 for this cause it's the mean
 			{
 				maxMag = fftMag;	//store max magnitude

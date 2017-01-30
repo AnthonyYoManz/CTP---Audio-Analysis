@@ -122,13 +122,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioAnalyser.cpp" />
+    <ClCompile Include="AudioSpectrum.cpp" />
     <ClCompile Include="FourierTransform.cpp" />
+    <ClCompile Include="OutlierDetector.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aliases.h" />
     <ClInclude Include="AudioAnalyser.h" />
+    <ClInclude Include="AudioSpectrum.h" />
+    <ClInclude Include="AudioSpectrumInstant.h" />
     <ClInclude Include="ConstrainedQueue.h" />
+    <ClInclude Include="LoopedQueue.h" />
+    <ClInclude Include="OutlierDetector.h" />
     <ClInclude Include="FourierTransform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -39,7 +39,5 @@ void splitSamples(real* _samples, unsigned int _sampleCount);
 //easily with audio (real) samples.
 void computeFFT(real* _samples, real* _output, unsigned int _sampleCount);
 
-void splitSamplesIntoChannels(real* _samples, unsigned int _totalSampleCount, real*& _outLeft, real*& _outRight);
-
 //long name but kinda necessary for the specificity of what's actually happening
-FFTResult compute2ChannelRealTo1ChannelComplexFFT(real* _samples, unsigned int _sampleCount, unsigned int _sampleCountPerInstant);
+FFTResult computeRealToComplexFFT(real* _samples, unsigned int _sampleCount, unsigned int _sampleCountPerInstant);
